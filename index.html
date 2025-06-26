@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Maplibre GeoJSON LineStrings Map</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://unpkg.com/maplibre-gl@^5.6.0/dist/maplibre-gl.js"></script>
+    <link href="https://unpkg.com/maplibre-gl@^5.6.0/dist/maplibre-gl.css" rel="stylesheet" />
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            overflow: hidden;
+        }
+        #map {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 100%;
+        }
+        .map-overlay {
+            position: absolute;
+            left: 0;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.8);
+            margin: 10px;
+            border-radius: 5px;
+            z-index: 1;
+        }
+        #side-panel {
+            position: absolute;
+            right: -400px;
+            top: 0;
+            bottom: 0;
+            width: 350px;
+            background: white;
+            box-shadow: -2px 0 5px rgba(0,0,0,0.2);
+            transition: right 0.3s ease;
+            padding: 20px;
+            overflow-y: auto;
+            z-index: 1;
+        }
+        #side-panel.visible {
+            right: 0;
+        }
+        #close-panel {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: #333;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            padding: 5px 10px;
+            cursor: pointer;
+        }
+        .property-item {
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        .property-key {
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 5px;
+            font-size: 0.95rem;
+        }
+        .property-value {
+            color: #34495e;
+            background: #f9f9f9;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            word-break: break-word;
+        }
+        .map-overlay1 {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            z-index: 1;
+            max-width: 400px;
+        }
+        
+        .map-overlay1 h3 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+            font-size: 1.1rem;
+        }
+        
+        .map-overlay1 p {
+            color: #34495e;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+    </style>
+</head>
+<body>
+    <div id="map"></div>
+    <div class="map-overlay">
+        <h3>CLIWOC data</h3>
+        <div><b>CLI</b>matology of the <b>W</b>orld's <b>OC</b>eans</div>
+        <p>Click on a ship path (line) to know more.</p>
+    </div>
+    <div id="side-panel">
+        <button id="close-panel">Close</button>
+        <h2>Feature Properties</h2>
+        <div id="properties-container"></div>
+    </div>
+    <div class="map-overlay1">
+        <h3>Ship nationality</h3>
+        <div><span style="color:red">&#9632;</span> Spain</div>
+        <div><span style="color:blue">&#9632;</span> France</div>
+        <div><span style="color:yellow">&#9632;</span> Sweden</div>
+        <div><span style="color:#BCBCC9">&#9632;</span> Denmark</div>
+        <div><span style="color:black">&#9632;</span> Germany</div>
+        <div><span style="color:green">&#9632;</span> United Kingdom</div>
+        <div><span style="color:pink">&#9632;</span> USA</div>
+    </div>
+
+    <script>
+        // Initialize the map
+        const map = new maplibregl.Map({
+            container: 'map',
+            style: 'https://tiles.openfreemap.org/styles/positron', 
+            center: [0, 0], // Default center
+            zoom: 1, // Default zoom
+        });
+
+        // Add navigation controls
+        map.addControl(new maplibregl.NavigationControl());
+
+        // Store original line style
+        const originalLineStyle = {
+            'line-color': [
+              "match",
+              ["get", "Ship nationality"],
+              'NL', "orange",
+              'UK', "green",
+              'US', "pink",
+              'DE', "black",
+              'SE', "yellow",
+              'FR', "blue",
+              'DK', "#BCBCC9",
+              'ES', "red",
+              "#aaa"
+            ],
+            'line-width': 1,
+            'line-opacity': 0.15,
+        };
+
+        // Highlight style
+        const highlightStyle = {
+            'line-color': '#000000',
+            'line-width': 4,
+            'line-opacity': 1,
+        };
+
+        // Track selected feature
+        let selectedFeature = null;
+
+        map.on('load', () => {
+            // Add the GeoJSON source to the map
+            map.addSource('linestrings', {
+                type: 'geojson',
+                data: "cliwoc1.json",
+                generateId: true // Ensure features have IDs
+            });
+            
+            // Add a layer for the LineStrings
+            map.addLayer({
+                id: 'linestrings-layer',
+                type: 'line',
+                source: 'linestrings',
+                paint: originalLineStyle
+            });
+
+            // Add click handler for features
+            map.on('click', 'linestrings-layer', function(e) {
+                if (e.features.length > 0) {
+                    // Reset previously selected feature
+                    if (selectedFeature !== null) {
+                        map.setFeatureState(
+                            { source: 'linestrings', id: selectedFeature.id },
+                            { selected: false }
+                        );
+                        map.removeLayer('path');
+                        map.removeSource('path');
+                    }
+
+                    // Set new selected feature
+                    selectedFeature = e.features[0];
+                    console.log(selectedFeature);
+                    map.setFeatureState(
+                        { source: 'linestrings', id: selectedFeature.id },
+                        { selected: true }
+                    );
+                    _coords = selectedFeature.geometry.coordinates.flat(Infinity);
+                    coords = [];
+                    for (var i = 0; i < _coords.length; i += 2) {
+                        coords.push([_coords[i], _coords[i+1]])
+                    }
+                    
+                    map.addLayer({
+                        id: 'path',
+                        type: 'circle',
+                        source: {
+                            type: 'geojson',
+                            data: {
+                                  "type": "FeatureCollection",
+                                  "features": coords.map(function (x) {
+                                      return {
+                                        "type": "Feature",
+                                        "geometry": {
+                                          "coordinates": x,
+                                          "type": "Point"
+                                        }   
+                                      };
+                                  })
+                                  
+                                  //[
+                                    //{
+                                      //"type": "Feature",
+                                      //"geometry": {
+                                        //"coordinates": selectedFeature.geometry.coordinates.flat(1)[0],
+                                        //"type": "Point"
+                                      //}
+                                    //}
+                                  //]
+                                }
+                        },
+                        paint: {
+                            'circle-color': 'black',
+                            'circle-radius': 5,
+                            'circle-stroke-width': 1,
+                            'circle-stroke-color': '#fff',
+                            'circle-opacity': 0.2
+                        }
+                    });
+
+                    // Show properties in side panel
+                    showProperties(selectedFeature.properties);
+                }
+            });
+
+            // Change cursor to pointer when hovering over features
+            map.on('mouseenter', 'linestrings-layer', function() {
+                map.getCanvas().style.cursor = 'pointer';
+            });
+
+            map.on('mouseleave', 'linestrings-layer', function() {
+                map.getCanvas().style.cursor = '';
+            });
+
+            // Update paint properties based on feature state
+            map.setPaintProperty('linestrings-layer', 'line-color', [
+                'case',
+                ['boolean', ['feature-state', 'selected'], false],
+                highlightStyle['line-color'],
+                originalLineStyle['line-color']
+            ]);
+
+            map.setPaintProperty('linestrings-layer', 'line-width', [
+                'case',
+                ['boolean', ['feature-state', 'selected'], false],
+                highlightStyle['line-width'],
+                originalLineStyle['line-width']
+            ]);
+            
+            map.setPaintProperty('linestrings-layer', 'line-opacity', [
+                'case',
+                ['boolean', ['feature-state', 'selected'], false],
+                highlightStyle['line-opacity'],
+                originalLineStyle['line-opacity']
+            ]);
+        });
+
+        // Function to show properties in side panel
+        function showProperties(properties) {
+            const container = document.getElementById('properties-container');
+            container.innerHTML = '';
+
+            if (!properties || Object.keys(properties).length === 0) {
+                container.innerHTML = '<p>No properties available for this feature.</p>';
+                return;
+            }
+
+            for (const [key, value] of Object.entries(properties)) {
+                const item = document.createElement('div');
+                item.className = 'property-item';
+                
+                const keyElement = document.createElement('div');
+                keyElement.className = 'property-key';
+                keyElement.textContent = key;
+                
+                const valueElement = document.createElement('div');
+                valueElement.className = 'property-value';
+                valueElement.textContent = typeof value === 'object' ? JSON.stringify(value) : value;
+                
+                item.appendChild(keyElement);
+                item.appendChild(valueElement);
+                container.appendChild(item);
+            }
+
+            // Show the side panel
+            document.getElementById('side-panel').classList.add('visible');
+        }
+
+        // Close side panel handler
+        document.getElementById('close-panel').addEventListener('click', function() {
+            document.getElementById('side-panel').classList.remove('visible');
+            
+            // Reset selected feature
+            if (selectedFeature !== null) {
+                map.setFeatureState(
+                    { source: 'linestrings', id: selectedFeature.id },
+                    { selected: false }
+                );
+                map.removeLayer('path');
+                map.removeSource('path');
+                selectedFeature = null;
+            }
+        });
+    </script>
+</body>
+</html>
