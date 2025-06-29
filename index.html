@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>Maplibre GeoJSON LineStrings Map</title>
+    <title>CLIWOC map visualization</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://unpkg.com/maplibre-gl@^5.6.0/dist/maplibre-gl.js"></script>
     <link href="https://unpkg.com/maplibre-gl@^5.6.0/dist/maplibre-gl.css" rel="stylesheet" />
@@ -26,7 +26,28 @@
             background: rgba(255, 255, 255, 0.8);
             margin: 10px;
             border-radius: 5px;
+            z-index: 2;
+        }
+        .map-overlay1 {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
             z-index: 1;
+            max-width: 400px;
+        }
+        .map-overlay1 h3 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+            font-size: 1.1rem;
+        }
+        .map-overlay1 p {
+            color: #34495e;
+            font-size: 0.9rem;
+            line-height: 1.5;
         }
         #side-panel {
             position: absolute;
@@ -39,7 +60,7 @@
             transition: right 0.3s ease;
             padding: 20px;
             overflow-y: auto;
-            z-index: 1;
+            z-index: 3;
         }
         #side-panel.visible {
             right: 0;
@@ -74,28 +95,46 @@
             font-size: 0.8rem;
             word-break: break-word;
         }
-        .map-overlay1 {
-            position: absolute;
-            bottom: 20px;
-            left: 20px;
-            background: rgba(255, 255, 255, 0.9);
-            padding: 15px;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            z-index: 1;
-            max-width: 400px;
+        #contextBtn {
+            background: #333;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            padding: 5px 10px;
+            cursor: pointer;
         }
-        
-        .map-overlay1 h3 {
-            color: #2c3e50;
-            margin-bottom: 10px;
-            font-size: 1.1rem;
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 10;
+            padding-top: 100px;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgb(0,0,0);
+            background-color: rgba(0,0,0,0.4);
         }
-        
-        .map-overlay1 p {
-            color: #34495e;
-            font-size: 0.9rem;
-            line-height: 1.5;
+        .modal-content {
+            background-color: #fefefe;
+            margin: auto;
+            margin-bottom: 50px;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+        }
+        .close-modal {
+            color: #aaaaaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+        .close-modal:hover,
+        .close-modal:focus {
+            color: #000;
+            text-decoration: none;
+            cursor: pointer;
         }
     </style>
 </head>
@@ -105,6 +144,8 @@
         <h3>CLIWOC data</h3>
         <div><b>CLI</b>matology of the <b>W</b>orld's <b>OC</b>eans</div>
         <p>Click on a ship path (line) to know more.</p>
+        <p><button id="contextBtn">Click for some context</button></p>
+        
     </div>
     <div id="side-panel">
         <button id="close-panel">Close</button>
@@ -120,6 +161,48 @@
         <div><span style="color:black">&#9632;</span> Germany</div>
         <div><span style="color:green">&#9632;</span> United Kingdom</div>
         <div><span style="color:pink">&#9632;</span> USA</div>
+    </div>
+    
+    <!-- The Modal -->
+    <div id="myModal" class="modal">
+        <!-- Modal content -->
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <div class="property-item">
+                <div class="property-key">What is CLIWOC</div>
+                <div class="property-value">
+                    <p>CLImatological Database for the World's OCeans 1750-1850 (CLIWOC) was an European Union funded project (2001-2003). The project was leaded by Universidad Complutense de Madrid in partnership with University of Sunderland, University of East Anglia, Royal Netherlands Meteorological Institute, Instituto de Ciencias Humanas, Sociales y Ambientales and the UK National Maritime Museum. The principal objective of the CLIWOC project was to realise the scientific potential of naval logbook climatic data and to produce a database of daily weather observations for the world’s oceans between 1750 and 1850.</p>
+                </div>
+            </div>
+            <div class="property-item">
+                <div class="property-key">Rationale (excerpt from CLIWOC documents)</div>
+                <div class="property-value">
+                    <p>From the earliest days of ocean sailing, mariners have kept accounts of their voyages. Christopher Columbus and the great Portuguese navigators began this tradition that persists to the present day. One of the principal functions of these logbooks was to assist in the navigation of the vessel. This was especially important when ships were out of sight of land and had no points of reference with which to determine their positions. By 1750 the keeping of logbooks was universal amongst the officers of European ships.</p>
+                    <p>One of the factors that a ship’s officer needed to take into account for reliable navigation was the weather. Navigation became a precise science only in the nineteenth century. Before that time more approximate methods were used to determine the true direction of the vessel’s course and the distance covered each day These all required that wind force and wind direction be carefully recorded, the information being then used to determine the ‘leeway’, made by the ship. Mariners also kept a careful note of other weather phenomena such as rain, thunder, fog and snow. Because observations were made several times each day during the voyage, logbooks contain huge amounts of such detailed information.</p>
+                    <p>Many logbooks failed to survive the rigours of life at sea but several thousand have come down to the present day. Some date from as long ago as the seventeenth century. Most frequent amongst the survivors are the logbooks of vessels in state service. Many thousands have been gathered together in a number of important archives. The United Kingdom, France, Spain and the Netherlands all possess notable collections. The CLIWOC project is the first attempt at a comprehensive study of this rich source of climatic data. It is curiously ironic that this legacy of the many past wars and conflicts between these nations should offer such an opportunity for co-operative scientific endeavour in this later age.</p>
+                </div>
+            </div>
+            <div class="property-item">
+                <div class="property-key">Understanding this information</div>
+                <div class="property-value">
+                    <p>Logbooks were written by seasoned mariners in the vocabulary unique to their profession and their times. Instruments were only rarely used and interest in the weather was limited to those aspects that influenced the navigation and progress of their ships. Seen through the eyes of the modern-day reader the descriptions of the weather are a mixture of the familiar and curious. Because the records were made to serve the needs of the day, and not those of the twenty-first century scientific enquirer, one of the principal challenges to the CLIWOC team is to interpret the weather vocabulary of former times, and thereby determine the true nature of the weather so assiduously recorded in often difficult circumstances.</p>
+                    <p>There is a <a href="https://web.archive.org/web/20180107201509/http://webs.ucm.es/info/cliwoc/documentation/Dictionary_text.pdf" target="_blank">dictionary</a> to better understand some of the records of the database and how some data was standardised between the different countries, periods, etc.</p>
+                </div>
+            </div>
+            <div class="property-item">
+                <div class="property-key">Other similar databases</div>
+                <div class="property-value">
+                    <p>The CLIWOC database cannot claim to be the first attempt to provide a summary of marine-based climatic data. The COADS database (developed in the United States) covers the mid-nineteenth century to the present day and has an international reputation, as do the Japanese Kobe collection and the data assembled at the UK’s Hadley Centre. These databases are concerned with instrumental information only. CLIWOC’s contribution will be to extend the record of oceanic climate back by a century into the period before instruments were widely used.</p>
+                </div>
+            </div>
+            <div class="property-item">
+                <div class="property-key">Code and more information</div>
+                <div class="property-value">
+                    <a href="https://github.com/kikocorreoso/cliwoc_vis" target="_blank">Github</a>
+                </div>
+            </div>
+        </div>
+
     </div>
 
     <script>
@@ -325,6 +408,21 @@
                 selectedFeature = null;
             }
         });
+        
+        var modal = document.getElementById("myModal");
+        var btn = document.getElementById("contextBtn");
+        var span = document.getElementsByClassName("close-modal")[0];
+        btn.onclick = function() {
+          modal.style.display = "block";
+        }
+        span.onclick = function() {
+          modal.style.display = "none";
+        }
+        window.onclick = function(event) {
+          if (event.target == modal) {
+            modal.style.display = "none";
+          }
+        }
     </script>
 </body>
 </html>
