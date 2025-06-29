@@ -34,12 +34,12 @@ P.D.: I worked in some way and veeeeeery tangentially at the later stage of this
 
 ## Links
 
-Official project web page: https://web.archive.org/web/20220820064149/http://webs.ucm.es/info/cliwoc/
-KNMI CLIWOC web page: https://web.archive.org/web/20171219105541/http://projects.knmi.nl/cliwoc/
-Data used for this visualization project: https://stvno.github.io/page/cliwoc/ (gpkg file)
-Database release v1.5: https://web.archive.org/web/20171029092037/http://webs.ucm.es/info/cliwoc/cliwoc15.htm
-Database release v2.1: https://web.archive.org/web/20171219105603/http://projects.knmi.nl/cliwoc/download/cliwoc21.htm
-CLIWOC final report: https://web.archive.org/web/20171209023706/http://webs.ucm.es/info/cliwoc/documentation/Cliwoc_final_report.pdf
-Some scientific results: https://web.archive.org/web/20160515133311/http://projects.knmi.nl/cliwoc/cliwocdata.htm
-Other scientific references: https://web.archive.org/web/20160515134559/http://projects.knmi.nl/cliwoc/cliwocpub.htm
-Interesting site about historical climatology: https://www.historicalclimatology.com/cliwoc.html
+* Official project web page: https://web.archive.org/web/20220820064149/http://webs.ucm.es/info/cliwoc/
+* KNMI CLIWOC web page: https://web.archive.org/web/20171219105541/http://projects.knmi.nl/cliwoc/
+* Data used for this visualization project: https://stvno.github.io/page/cliwoc/ (gpkg file)
+* Database release v1.5: https://web.archive.org/web/20171029092037/http://webs.ucm.es/info/cliwoc/cliwoc15.htm
+* Database release v2.1: https://web.archive.org/web/20171219105603/http://projects.knmi.nl/cliwoc/download/cliwoc21.htm
+* CLIWOC final report: https://web.archive.org/web/20171209023706/http://webs.ucm.es/info/cliwoc/documentation/Cliwoc_final_report.pdf
+* Some scientific results: https://web.archive.org/web/20160515133311/http://projects.knmi.nl/cliwoc/cliwocdata.htm
+* Other scientific references: https://web.archive.org/web/20160515134559/http://projects.knmi.nl/cliwoc/cliwocpub.htm
+* Interesting site about historical climatology: https://www.historicalclimatology.com/cliwoc.html
